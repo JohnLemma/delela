@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 from datetime import datetime
 import os
 
@@ -7,6 +8,11 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///marketplace.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Cache configuration
+app.config['CACHE_TYPE'] = 'simple'
+app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # 5 minutes cache timeout
+cache = Cache(app)
 
 db = SQLAlchemy(app)
 
@@ -121,6 +127,7 @@ with app.app_context():
 
 # Routes
 @app.route('/')
+@cache.cached(timeout=60)  # Cache the homepage for 1 minute
 def home():
     try:
         # Get filter parameters
@@ -130,8 +137,8 @@ def home():
         min_price = request.args.get('min_price', type=float)
         max_price = request.args.get('max_price', type=float)
         
-        # Base query
-        query = Property.query
+        # Base query with eager loading of all fields
+        query = Property.query.options(db.joinedload('*'))
         
         # Apply filters
         if property_type != 'all':
@@ -170,6 +177,7 @@ def home():
         return render_template('index.html', properties=[])
 
 @app.route('/property/<int:property_id>')
+@cache.memoize(60)  # Cache individual property pages for 1 minute
 def property_detail(property_id):
     try:
         property = Property.query.get_or_404(property_id)
@@ -220,6 +228,13 @@ def add_property():
             return redirect(url_for('add_property'))
     
     return render_template('add_property.html')
+
+@app.after_request
+def add_header(response):
+    # Cache static assets for 1 hour
+    if 'static/' in request.path:
+        response.cache_control.max_age = 3600
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
