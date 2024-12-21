@@ -48,7 +48,13 @@
 <div class="property-grid">
     {% for property in properties %}
     <div class="property-card">
-        <img src="{{ property.image_url }}" class="card-img-top" alt="{{ property.title }}">
+        <img src="{{ property.image_url }}&w=400&q=80" 
+             loading="lazy"
+             alt="{{ property.title }}"
+             srcset="{{ property.image_url }}&w=300&q=75 300w,
+                     {{ property.image_url }}&w=400&q=80 400w"
+             sizes="(max-width: 768px) 300px,
+                    400px">
         <div class="card-body">
             <h5 class="card-title">{{ property.title }}</h5>
             <p class="price">ETB {{ "{:,.2f}".format(property.price) }}</p>

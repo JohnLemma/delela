@@ -7,8 +7,17 @@
     --light-gray: #f8f9fa;
 }
 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background: #f4f4f4;
+    font-size: 16px;
     padding-top: 60px;
     min-height: 100vh;
     display: flex;
@@ -20,22 +29,41 @@ body {
     padding: 20px 0;
 }
 
+.container {
+    width: 95%;
+    margin: auto;
+    padding: 10px;
+}
+
 /* Navigation */
 .navbar {
+    background: #333;
+    color: #fff;
+    padding: 0.8rem;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .navbar-brand {
     font-size: 1.4rem;
     font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+    margin-right: 10px;
 }
 
 /* Cards */
 .property-card {
-    height: 100%;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border: none;
+    background: #fff;
+    border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.2s;
+    border: none;
+    height: 100%;
 }
 
 .property-card:hover {
@@ -43,9 +71,11 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-.property-card .card-img-top {
+.property-card img {
+    width: 100%;
     height: 200px;
     object-fit: cover;
+    display: block;
     border-top-left-radius: calc(0.25rem - 1px);
     border-top-right-radius: calc(0.25rem - 1px);
 }
@@ -85,6 +115,17 @@ body {
     margin-bottom: 1.5rem;
 }
 
+.property-info h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.property-price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+}
+
 /* Forms */
 .form-container {
     max-width: 800px;
@@ -93,6 +134,41 @@ body {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.7rem 1rem;
+    background: #333;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: 100%;
+    text-align: center;
 }
 
 /* Search and Filter Section */
@@ -111,9 +187,10 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-    body {
-        padding-top: 56px;
+@media (min-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 20px;
     }
 
     .navbar-brand {
@@ -125,11 +202,11 @@ body {
     }
 
     .filter-section {
-        flex-direction: column;
+        flex-direction: row;
     }
 
     .filter-section .form-group {
-        width: 100%;
+        width: auto;
     }
 
     .search-section {
@@ -145,31 +222,10 @@ body {
     }
 }
 
-@media (max-width: 576px) {
+@media (min-width: 1024px) {
     .container {
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-
-    .property-card {
-        margin-bottom: 1rem;
-    }
-
-    .property-card .card-img-top {
-        height: 160px;
-    }
-
-    .property-details img {
-        border-radius: 0;
-    }
-
-    .footer {
-        text-align: center;
-    }
-
-    .footer .text-md-end {
-        text-align: center !important;
-        margin-top: 1rem;
+        width: 85%;
+        max-width: 1200px;
     }
 }
 
@@ -181,23 +237,6 @@ body {
     margin-top: auto;
 }
 
-/* Buttons */
-.btn {
-    border-radius: 0.25rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
-
 /* Alerts */
 .alert {
     border-radius: 0.25rem;
@@ -207,14 +246,28 @@ body {
 /* Grid Layout */
 .property-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
-@media (max-width: 576px) {
+@media (min-width: 768px) {
     .property-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
+}
+
+@media (min-width: 1024px) {
+    .property-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+    }
+}
+
+/* Performance optimizations */
+.property-card {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
 }
