@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            {% if property.image_url %}
+            <img src="{{ property.image_url }}" class="img-fluid rounded" alt="{{ property.title }}">
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <div class="property-info">
+                <h2>{{ property.title }}</h2>
+                <h3 class="price">ETB {{ "{:,.2f}".format(property.price) }}</h3>
+                <p class="location">
+                    <i class="fas fa-map-marker-alt"></i> {{ property.location }}
+                </p>
+                <p class="text-muted">Listed on {{ property.created_at.strftime('%B %d, %Y') }}</p>
+                
+                {% if property.type == 'house' %}
+                <div class="details mt-4">
+                    <h4>Property Details</h4>
+                    <ul class="list-unstyled">
+                        {% if property.bedrooms %}
+                        <li><i class="fas fa-bed"></i> {{ property.bedrooms }} Bedrooms</li>
+                        {% endif %}
+                        
+                        {% if property.bathrooms %}
+                        <li><i class="fas fa-bath"></i> {{ property.bathrooms }} Bathrooms</li>
+                        {% endif %}
+                        
+                        {% if property.square_feet %}
+                        <li><i class="fas fa-ruler-combined"></i> {{ property.square_feet }} Square Feet</li>
+                        {% endif %}
+                        
+                        {% if property.year_built %}
+                        <li><i class="fas fa-calendar-alt"></i> Built in {{ property.year_built }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% else %}
+                <div class="details mt-4">
+                    <h4>Vehicle Details</h4>
+                    <ul class="list-unstyled">
+                        {% if property.make %}
+                        <li><i class="fas fa-car"></i> {{ property.make }} {{ property.model }}</li>
+                        {% endif %}
+                        
+                        {% if property.year %}
+                        <li><i class="fas fa-calendar-alt"></i> Year: {{ property.year }}</li>
+                        {% endif %}
+                        
+                        {% if property.mileage %}
+                        <li><i class="fas fa-tachometer-alt"></i> {{ "{:,}".format(property.mileage) }} miles</li>
+                        {% endif %}
+                        
+                        {% if property.condition %}
+                        <li><i class="fas fa-info-circle"></i> Condition: {{ property.condition }}</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <div class="contact-buttons mt-4">
+                    <button class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-phone"></i> Contact Seller
+                    </button>
+                    <button class="btn btn-outline-primary w-100">
+                        <i class="fas fa-envelope"></i> Send Message
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="property-info">
+                <h4>Description</h4>
+                <p>{{ property.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
