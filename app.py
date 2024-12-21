@@ -5,12 +5,8 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'
-
-# Use SQLite for local development, PostgreSQL for production
-if 'RENDER' in os.environ:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///marketplace.db'  # We'll keep using SQLite for now
-else:
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///marketplace.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///marketplace.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
@@ -99,71 +95,89 @@ def add_sample_data():
             }
         ]
 
-        # Add all properties to the database
-        for house in houses:
-            new_house = Property(**house)
-            db.session.add(new_house)
-
-        for car in cars:
-            new_car = Property(**car)
-            db.session.add(new_car)
-
         try:
+            # Add all properties to the database
+            for house in houses:
+                new_house = Property(**house)
+                db.session.add(new_house)
+
+            for car in cars:
+                new_car = Property(**car)
+                db.session.add(new_car)
+
             db.session.commit()
             print("Added sample data successfully!")
         except Exception as e:
             print(f"Error adding sample data: {e}")
             db.session.rollback()
 
+# Initialize database and add sample data
+with app.app_context():
+    try:
+        db.create_all()
+        add_sample_data()
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+
 # Routes
 @app.route('/')
 def home():
-    # Get filter parameters
-    property_type = request.args.get('type', 'all')
-    sort_by = request.args.get('sort', 'newest')
-    search_query = request.args.get('search', '')
-    min_price = request.args.get('min_price', type=float)
-    max_price = request.args.get('max_price', type=float)
-    
-    # Base query
-    query = Property.query
-    
-    # Apply filters
-    if property_type != 'all':
-        query = query.filter_by(type=property_type)
-    
-    if search_query:
-        search = f"%{search_query}%"
-        query = query.filter(
-            db.or_(
-                Property.title.ilike(search),
-                Property.description.ilike(search),
-                Property.location.ilike(search)
+    try:
+        # Get filter parameters
+        property_type = request.args.get('type', 'all')
+        sort_by = request.args.get('sort', 'newest')
+        search_query = request.args.get('search', '')
+        min_price = request.args.get('min_price', type=float)
+        max_price = request.args.get('max_price', type=float)
+        
+        # Base query
+        query = Property.query
+        
+        # Apply filters
+        if property_type != 'all':
+            query = query.filter_by(type=property_type)
+        
+        if search_query:
+            search = f"%{search_query}%"
+            query = query.filter(
+                db.or_(
+                    Property.title.ilike(search),
+                    Property.description.ilike(search),
+                    Property.location.ilike(search)
+                )
             )
-        )
-    
-    if min_price is not None:
-        query = query.filter(Property.price >= min_price)
-    if max_price is not None:
-        query = query.filter(Property.price <= max_price)
-    
-    # Apply sorting
-    if sort_by == 'price_low':
-        query = query.order_by(Property.price.asc())
-    elif sort_by == 'price_high':
-        query = query.order_by(Property.price.desc())
-    elif sort_by == 'newest':
-        query = query.order_by(Property.created_at.desc())
-    else:  # oldest
-        query = query.order_by(Property.created_at.asc())
-    
-    properties = query.all()
-    return render_template('index.html', properties=properties)
+        
+        if min_price is not None:
+            query = query.filter(Property.price >= min_price)
+        if max_price is not None:
+            query = query.filter(Property.price <= max_price)
+        
+        # Apply sorting
+        if sort_by == 'price_low':
+            query = query.order_by(Property.price.asc())
+        elif sort_by == 'price_high':
+            query = query.order_by(Property.price.desc())
+        elif sort_by == 'newest':
+            query = query.order_by(Property.created_at.desc())
+        else:  # oldest
+            query = query.order_by(Property.created_at.asc())
+        
+        properties = query.all()
+        return render_template('index.html', properties=properties)
+    except Exception as e:
+        print(f"Error in home route: {e}")
+        flash('An error occurred while loading properties.', 'danger')
+        return render_template('index.html', properties=[])
 
 @app.route('/property/<int:property_id>')
 def property_detail(property_id):
-    property = Property.query.get_or_404(property_id)
-    return render_template('property_detail.html', property=property)
+    try:
+        property = Property.query.get_or_404(property_id)
+        return render_template('property_detail.html', property=property)
+    except Exception as e:
+        print(f"Error in property_detail route: {e}")
+        flash('Property not found.', 'danger')
+        return redirect(url_for('home'))
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_property():
@@ -201,20 +215,11 @@ def add_property():
             flash('Property added successfully!', 'success')
             return redirect(url_for('home'))
         except Exception as e:
-            flash(f'Error adding property: {str(e)}', 'danger')
+            print(f"Error adding property: {e}")
+            flash('Error adding property. Please try again.', 'danger')
             return redirect(url_for('add_property'))
     
     return render_template('add_property.html')
 
-# Create tables and add sample data
-def init_db():
-    with app.app_context():
-        try:
-            db.create_all()
-            add_sample_data()
-        except Exception as e:
-            print(f"Error initializing database: {e}")
-
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
